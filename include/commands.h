@@ -5,3 +5,4 @@
 #define MOVE_BACKWARD 'B'
 #define MOVE_RIGHT 'R'
 #define MOVE_LEFT 'L'
+#define STOP 'S'
