@@ -1,5 +1,7 @@
 #include <Arduino.h>
+
 #include "commands.h"
+#include "imu.h"
 
 struct Motor {
     uint8_t forward_pin;
@@ -17,12 +19,21 @@ struct Motor {
     float previous_error;
 };
 
+struct MovementCommand {
+    char action;
+    int speed;
+};
+
+MovementCommand previousCommand = {STOP, 0};
+
 Motor motors[] = {
     {13, 12, 11, 3, 17, 964, 0, 0.0, 0.0, 0.0, 0.0},
     {9, 8, 10, 2, 16, 360, 0, 0.0, 0.0, 0.0, 0.0},
     {6, 7, 5, 19, 15, 360, 0, 0.0, 0.0, 0.0, 0.0},
     {42, 44, 46, 18, 14, 360, 0, 0.0, 0.0, 0.0, 0.0}
 };
+
+IMU imu;
 
 volatile long int encoder_counts[] = {0, 0, 0, 0};
 
@@ -50,7 +61,7 @@ void countBackRightPulse() { countPulse(3); }
 void setMotor(int i, int pwm) {
     digitalWrite(motors[i].forward_pin, pwm > 0 ? HIGH : LOW);
     digitalWrite(motors[i].backward_pin, pwm > 0 ? LOW : HIGH);
-    analogWrite(motors[i].pwm_pin, abs(pwm));
+    analogWrite(motors[i].pwm_pin, pwm);
 }
 
 void forward(int speed) {
@@ -83,8 +94,8 @@ void rotate(int speed) {
     motors[0].target_velocity = speed;
     motors[2].target_velocity = speed;
 
-    motors[0].target_velocity = -speed;
-    motors[2].target_velocity = -speed;
+    motors[1].target_velocity = -speed;
+    motors[3].target_velocity = -speed;
 }
 
 void stop() {
@@ -92,6 +103,8 @@ void stop() {
         motors[i].target_velocity = 0;
     }
 }
+
+float targetYaw = 0;
 
 void setup() {
     Serial.begin(9600);
@@ -118,27 +131,38 @@ void loop() {
             
             switch (action[0]) {
                 case ROTATE_TO:
-                    rotate(arg.toInt());
+                    targetYaw = arg.toFloat();
                     break;
                 case MOVE_FORWARD:
+                    previousCommand.action = MOVE_FORWARD;
+                    previousCommand.speed = arg.toInt();
                     forward(arg.toInt());
                     break;
                 case MOVE_BACKWARD:
+                    previousCommand.action = MOVE_BACKWARD;
+                    previousCommand.speed = arg.toInt();
                     backward(arg.toInt());
                     break;
                 case MOVE_LEFT:
+                    previousCommand.action = MOVE_LEFT;
+                    previousCommand.speed = arg.toInt();
                     left(arg.toInt());
                     break;
                 case MOVE_RIGHT:
+                    previousCommand.action = MOVE_RIGHT;
+                    previousCommand.speed = arg.toInt();
                     right(arg.toInt());
                     break;
                 case STOP:
+                    previousCommand.action = STOP;
+                    previousCommand.speed = 0;
                     stop();
                 default:
                     break;
             }
         }
     }
+
 
     if (currentTime - lastTime >= interval) {
         noInterrupts();
@@ -166,6 +190,36 @@ void loop() {
         }
         
         lastTime = currentTime;
+    }
+
+    float currentYaw = imu.readYaw();
+    float error = targetYaw - currentYaw;
+
+    while (error > 180) error -= 360;
+    while (error < -180) error += 360;
+
+    if (abs(error) > 3) {
+        rotate(error > 0 ? 50 : -50);
+    } else {
+        // Reapply the previous movement command
+        switch (previousCommand.action) {
+            case STOP:
+                stop();
+            case MOVE_FORWARD:
+                forward(previousCommand.speed);
+                break;
+            case MOVE_BACKWARD:
+                backward(previousCommand.speed);
+                break;
+            case MOVE_LEFT:
+                left(previousCommand.speed);
+                break;
+            case MOVE_RIGHT:
+                right(previousCommand.speed);
+                break;
+            default:
+                break;
+        }
     }
 }
 
