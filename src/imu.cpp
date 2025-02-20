@@ -17,7 +17,7 @@ IMU::IMU(int address) {
 
 float IMU::readYaw() {
     Wire.beginTransmission(this->address_);
-    Wire.write(0x16);
+    Wire.write(NAVX_REG_YAW_L);
     Wire.write(2);
     Wire.endTransmission();
 
