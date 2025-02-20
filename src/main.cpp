@@ -121,8 +121,10 @@ void loop() {
     unsigned long currentTime = millis();
 
     if (Serial.available() > 0) {
-        auto command = Serial.readStringUntil('\n');
+        auto command = Serial.readStringUntil(';');
         if (command.startsWith("C")) {
+            Serial.print("C: ");
+            Serial.println(command);
 
             command = command.substring(1);
             int sep_indx = command.indexOf(':');
@@ -131,7 +133,7 @@ void loop() {
             
             switch (action[0]) {
                 case ROTATE_TO:
-                    targetYaw = arg.toFloat();
+                    targetYaw = arg.toInt();
                     break;
                 case MOVE_FORWARD:
                     previousCommand.action = MOVE_FORWARD;
@@ -197,7 +199,6 @@ void loop() {
 
     while (error > 180) error -= 360;
     while (error < -180) error += 360;
-
     if (abs(error) > 3) {
         rotate(error > 0 ? 50 : -50);
     } else {
