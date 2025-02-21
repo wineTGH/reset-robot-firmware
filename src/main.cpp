@@ -97,7 +97,8 @@ void applyCommand(Command command) {
 void setup() {
     Serial.begin(9600);
     // Ждём пока IMU датчик не отколибруется
-    delay(25000);
+    // delay(25000);
+
 }
 
 
@@ -117,6 +118,8 @@ void loop() {
 
     float currentYaw = imu.readYaw();
     float error = targetYaw - currentYaw;
+    Serial.println(currentYaw);
+    delay(100);
 
     while (error > 180) error -= 360;
     while (error < -180) error += 360;
