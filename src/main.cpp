@@ -3,11 +3,12 @@
 #include "commands.h"
 #include "imu.h"
 #include "motors.h"
+#include "actuator.h"
 
-Motor motor_left_front(13, 12, 11, 3, 17, 3856);
-Motor motor_right_front(9, 8, 10, 2, 16, 1440);
-Motor motor_left_back(6, 7, 5, 19, 15, 1440);
-Motor motor_right_back(42, 44, 46, 18, 14, 1440);
+Motor motor_left_front(13, 12, 11);
+Motor motor_right_front(9, 8, 10);
+Motor motor_left_back(6, 7, 5);
+Motor motor_right_back(42, 44, 46);
 
 Motor motors[] = {
     motor_left_front, 
@@ -16,6 +17,7 @@ Motor motors[] = {
     motor_right_back
 };
 
+Actuator actuator (1, 2);
 IMU imu;
 float targetYaw = 0;
 
