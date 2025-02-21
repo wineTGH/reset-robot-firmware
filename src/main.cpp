@@ -94,7 +94,6 @@ void applyCommand(Command command) {
 
 void setup() {
     Serial.begin(9600);
-
     // Ждём пока IMU датчик не отколибруется
     delay(25000);
 }
@@ -121,7 +120,7 @@ void loop() {
     while (error < -180) error += 360;
 
     if (abs(error) > 3) {
-        rotate(error > 0 ? 50 : -50);
+        rotate(error > 0 ? 35 : -35);
     } else {
         applyCommand(command);
     }
