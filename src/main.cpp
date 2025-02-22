@@ -112,17 +112,15 @@ void applyCommand(Command command) {
                     platform.up();
                 }
                 platform.stop();
-                break;
             } else {
                 while (digitalRead(32) == LOW) {
                     Serial.println("DOWN");
                     platform.down();
                 }
                 platform.stop();
-                break;
             }
             command = {STOP, 0};
-            platform.stop();
+            //platform.stop();
             break;
         default:
             break;
@@ -130,13 +128,12 @@ void applyCommand(Command command) {
 }
 
 void setup() {
-    Serial.begin(9600);
+    Serial.begin(115200);
     // delay(25000);
     pinMode(32, INPUT_PULLUP);
     pinMode(30, INPUT_PULLUP);
 }
 
-int previousState = 0;
 void loop() {
     if (Serial.available() > 0) {
         String received_message = Serial.readStringUntil(';');
@@ -153,7 +150,6 @@ void loop() {
 
     float currentYaw = imu.readYaw();
     float error = targetYaw - currentYaw;
-
     while (error > 180) error -= 360;
     while (error < -180) error += 360;
 
