@@ -1,9 +1,9 @@
 #include <Arduino.h>
-
 #include "commands.h"
 #include "imu.h"
 #include "motors.h"
 #include "actuator.h"
+#include "stepper.h"
 
 Motor motor_left_front(13, 12, 11);
 Motor motor_right_front(9, 8, 10);
@@ -17,7 +17,8 @@ Motor motors[] = {
     motor_right_back
 };
 
-Actuator actuator (1, 2);
+Actuator actuator (35, 37);
+Actuator platform (33, 31);
 IMU imu;
 float targetYaw = 0;
 
@@ -89,6 +90,40 @@ void applyCommand(Command command) {
             break;
         case STOP:
             stop();
+            break;
+        case ACTUATOR:
+            if (command.arg > 0) {
+                actuator.up();
+                delay(1000);
+                actuator.stop();
+            } else {
+                actuator.down();
+                delay(1000);
+                actuator.stop();
+            }
+
+            command = {STOP, 0};
+            break;
+        case PLATFORM:
+        Serial.println("Platform");
+            if (command.arg > 0) {
+                while (digitalRead(30) == LOW) {
+                    Serial.println("UP");
+                    platform.up();
+                }
+                platform.stop();
+                break;
+            } else {
+                while (digitalRead(32) == LOW) {
+                    Serial.println("DOWN");
+                    platform.down();
+                }
+                platform.stop();
+                break;
+            }
+            command = {STOP, 0};
+            platform.stop();
+            break;
         default:
             break;
     }
@@ -96,12 +131,12 @@ void applyCommand(Command command) {
 
 void setup() {
     Serial.begin(9600);
-    // Ждём пока IMU датчик не отколибруется
     // delay(25000);
-
+    pinMode(32, INPUT_PULLUP);
+    pinMode(30, INPUT_PULLUP);
 }
 
-
+int previousState = 0;
 void loop() {
     if (Serial.available() > 0) {
         String received_message = Serial.readStringUntil(';');
@@ -118,8 +153,6 @@ void loop() {
 
     float currentYaw = imu.readYaw();
     float error = targetYaw - currentYaw;
-    Serial.println(currentYaw);
-    delay(100);
 
     while (error > 180) error -= 360;
     while (error < -180) error += 360;
