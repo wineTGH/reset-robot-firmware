@@ -9,3 +9,4 @@
 #define ACTUATOR 'A'
 #define PLATFORM 'P'
 #define STEPPER 'G'
+#define RESET_YAW 'N'

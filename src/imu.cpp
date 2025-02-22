@@ -35,3 +35,10 @@ float IMU::readYaw() {
 
     return decodeProtocolSignedHundredthsFloat((char *)&data[0]);
 }
+
+void IMU::resetYaw() {
+    Wire.beginTransmission(this->address_);
+    Wire.write(0x80 | 0x56);
+    Wire.write(0x80);
+    Wire.endTransmission();
+}

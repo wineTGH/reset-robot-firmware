@@ -8,7 +8,7 @@ class IMU {
     public:
         IMU(int address = 0x32);
         float readYaw();
-
+        void resetYaw();
     private:
         int address_;
 };

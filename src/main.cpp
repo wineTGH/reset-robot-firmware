@@ -120,9 +120,9 @@ void applyCommand(Command command) {
             platform.stop();
             break;
         case STEPPER:
-            if (command.arg > 0) {
-                
-            }
+            break;
+        case RESET_YAW:
+            imu.resetYaw();
             break;
         default:
             break;
@@ -151,15 +151,15 @@ void loop() {
     if (Serial.available() > 0) {
         String received_message = Serial.readStringUntil(';');
         if (received_message.startsWith("M")) {
-            Serial.println(received_message);
-
+            
             movementCommand = parseCommand(received_message);
             applyCommand(movementCommand);
-        
+            Serial.println("OK");
+            
         } else if (received_message.startsWith("P")) {
-            Serial.println(received_message);
             grabCommand = parseCommand(received_message);
             applyCommand(grabCommand);
+            Serial.println("OK");
         }
     }
 
