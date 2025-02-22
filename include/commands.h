@@ -8,3 +8,4 @@
 #define STOP 'S'
 #define ACTUATOR 'A'
 #define PLATFORM 'P'
+#define STEPPER 'G'

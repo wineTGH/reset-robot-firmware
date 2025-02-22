@@ -27,7 +27,8 @@ struct Command {
     int arg;
 };
 
-Command command = {STOP, 0};
+Command movementCommand = {STOP, 0};
+Command grabCommand = {ACTUATOR, 0};
 
 
 void forward(int speed) {
@@ -94,33 +95,34 @@ void applyCommand(Command command) {
         case ACTUATOR:
             if (command.arg > 0) {
                 actuator.up();
-                delay(1000);
+                delay(10000);
                 actuator.stop();
             } else {
                 actuator.down();
-                delay(1000);
+                delay(10000);
                 actuator.stop();
             }
 
             command = {STOP, 0};
             break;
         case PLATFORM:
-        Serial.println("Platform");
             if (command.arg > 0) {
                 while (digitalRead(30) == LOW) {
-                    Serial.println("UP");
                     platform.up();
                 }
                 platform.stop();
             } else {
                 while (digitalRead(32) == LOW) {
-                    Serial.println("DOWN");
                     platform.down();
                 }
                 platform.stop();
             }
-            command = {STOP, 0};
-            //platform.stop();
+            platform.stop();
+            break;
+        case STEPPER:
+            if (command.arg > 0) {
+                
+            }
             break;
         default:
             break;
@@ -128,27 +130,41 @@ void applyCommand(Command command) {
 }
 
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(9600);
     // delay(25000);
     pinMode(32, INPUT_PULLUP);
     pinMode(30, INPUT_PULLUP);
 }
 
+Command parseCommand(String message) {
+    String raw_command = message.substring(1);
+    int sep_indx = raw_command.indexOf(':');
+    String action = raw_command.substring(sep_indx - 1, sep_indx);
+    String arg = raw_command.substring(sep_indx + 1);
+
+    Command c = {action[0], (int)arg.toInt()};
+
+    return c;
+}
+
 void loop() {
     if (Serial.available() > 0) {
         String received_message = Serial.readStringUntil(';');
-        if (received_message.startsWith("C")) {
-            String raw_command = received_message.substring(1);
-            int sep_indx = raw_command.indexOf(':');
-            String action = raw_command.substring(sep_indx - 1, sep_indx);
-            String arg = raw_command.substring(sep_indx + 1);
+        if (received_message.startsWith("M")) {
+            Serial.println(received_message);
 
-            command = {action[0], (int)arg.toInt()};
-            applyCommand(command);
+            movementCommand = parseCommand(received_message);
+            applyCommand(movementCommand);
+        
+        } else if (received_message.startsWith("P")) {
+            Serial.println(received_message);
+            grabCommand = parseCommand(received_message);
+            applyCommand(grabCommand);
         }
     }
 
     float currentYaw = imu.readYaw();
+
     float error = targetYaw - currentYaw;
     while (error > 180) error -= 360;
     while (error < -180) error += 360;
@@ -156,6 +172,6 @@ void loop() {
     if (abs(error) > 3) {
         rotate(error > 0 ? 35 : -35);
     } else {
-        applyCommand(command);
+        applyCommand(movementCommand);
     }
 }
