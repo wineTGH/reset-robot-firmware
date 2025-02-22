@@ -2,12 +2,16 @@
 
 #include <Arduino.h>
 
-#define DIR_PIN 6
-#define CLK_PIN 7
-#define EN_PIN 8
+#define DIR_PIN 50
+#define CLK_PIN 52
+#define EN_PIN 48
 #define STEP_DELAY 1000
 
 void startStepper() {
+    pinMode(DIR_PIN, OUTPUT);
+    pinMode(CLK_PIN, OUTPUT);
+    pinMode(EN_PIN, OUTPUT);
+    
     digitalWrite(DIR_PIN, HIGH);
     digitalWrite(EN_PIN, LOW);
 

@@ -6,3 +6,5 @@
 #define MOVE_RIGHT 'R'
 #define MOVE_LEFT 'L'
 #define STOP 'S'
+#define ACTUATOR 'A'
+#define PLATFORM 'P'
