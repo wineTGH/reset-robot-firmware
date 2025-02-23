@@ -134,6 +134,8 @@ void setup() {
     // delay(25000);
     pinMode(32, INPUT_PULLUP);
     pinMode(30, INPUT_PULLUP);
+    startStepper();
+    resetStepper();
 }
 
 Command parseCommand(String message) {
@@ -148,6 +150,14 @@ Command parseCommand(String message) {
 }
 
 void loop() {
+    resetStepper();
+    rotateStepper(200, true);
+    delay(1000);
+    resetStepper();
+    rotateStepper(400, true);
+    delay(1000);
+    resetStepper();
+
     if (Serial.available() > 0) {
         String received_message = Serial.readStringUntil(';');
         if (received_message.startsWith("M")) {
