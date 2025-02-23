@@ -45,8 +45,10 @@ void backward(int speed) {
 
 void right(int speed) {
     motors[0].set(speed);
+
     motors[1].set(-speed);
     motors[2].set(-speed);
+    
     motors[3].set(speed);
 }
 
@@ -120,6 +122,8 @@ void applyCommand(Command command) {
             platform.stop();
             break;
         case STEPPER:
+            resetStepper();
+            rotateStepper(command.arg, command.arg > 0 ? true : false);
             break;
         case RESET_YAW:
             imu.resetYaw();
@@ -150,13 +154,7 @@ Command parseCommand(String message) {
 }
 
 void loop() {
-    resetStepper();
-    rotateStepper(200, true);
-    delay(1000);
-    resetStepper();
-    rotateStepper(400, true);
-    delay(1000);
-    resetStepper();
+
 
     if (Serial.available() > 0) {
         String received_message = Serial.readStringUntil(';');
