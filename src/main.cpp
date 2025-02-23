@@ -113,10 +113,12 @@ void applyCommand(Command command) {
                     platform.up();
                 }
                 platform.stop();
-            } else {
+            } else if (command.arg < 0) {
                 while (digitalRead(32) == LOW) {
                     platform.down();
                 }
+                platform.stop();
+            } else {
                 platform.stop();
             }
             platform.stop();
